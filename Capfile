@@ -1,7 +1,17 @@
-load 'deploy'
+# Load DSL and Setup Up Stages
+require 'capistrano/setup'
 
-# Uncomment if you are using Rails' asset pipeline
-# load 'deploy/assets'
+# Includes default deployment tasks
+require 'capistrano/deploy'
 
-# remove this line to skip loading any of the default tasks
-load 'config/deploy'
+# enable capistrano/rvm for initial deploy
+require 'capistrano/rvm'
+
+# require 'capistrano/rbenv'
+# require 'capistrano/chruby'
+require 'capistrano/bundler'
+require 'capistrano/rails/assets'
+require 'capistrano/rails/migrations'
+
+# Loads custom tasks from `lib/capistrano/tasks' if you have any defined.
+Dir.glob('lib/capistrano/tasks/*.cap').each { |r| import r }

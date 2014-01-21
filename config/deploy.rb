@@ -1,69 +1,93 @@
-load "config/capistrano/helpers"
+#OPTIMIZE improve speed of deploing
+#TODO make elegant exit unicorn restart and stop
 
-# =========================================================
-# Params
-# =========================================================
-set :site_name,   "zykin-ilya.ru"
-set :server_addr, "zykin-ilya.ru"
-set :application, site_name
+set :application, 'art_electronics'
+set :user, 'www'
+set :scm, :git
+set :repo_url, 'git@github.com:taichiman/open-cook.git'
+set :deploy_to, -> { "/home/#{ fetch :user }/#{ fetch :application }/#{ fetch :stage }" }
 
-# base vars
-set :gemset_name, :zykin_ilya
-set :user,        :open_cook_web
-set :socket_name, :zykin_ilya_server
-set :users_home,  "/var/www/open_cook_web/data"
-set :deploy_to,   "#{users_home}/www/#{application}"
-default_run_options[:shell] = "/bin/bash --login"
+ask :branch, proc { `git rev-parse --abbrev-ref HEAD`.chomp }
 
-# helper vars
-set :rvm_src, 'source "$HOME/.rvm/scripts/rvm"'
-set :gemset,  _join([rvm_src, "rvm gemset use #{gemset_name} "])
-set :app_env, "RAILS_ENV=production "
-set :to_app,  "cd #{release_path} "
+set :format, :pretty
+set :log_level, :debug
+set :pty, true
 
-# deploy params
-set :scm,         :git
-set :deploy_via,  :remote_cache
-server server_addr, :app, :web, :db, primary: true
+set :linked_files, %w{config/database.yml}
+set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
 
-# main repo params
-set :repository,  "git@github.com:open-cook/open-cook.git"
-set :branch,      "master"
-
-# connection params
-set :use_sudo, false
-default_run_options[:pty] = true
-set :ssh_options, { forward_agent: true }
-
-# releases cleanup
+# set :default_env, { path: "/opt/ruby/bin:$PATH" }
 set :keep_releases, 5
-after "deploy:restart", "deploy:cleanup"
+set :ssh_options, {:forward_agent => true}
 
-# =========================================================
-# Tasks
-# =========================================================
-load "config/capistrano/web_server"
-load "config/capistrano/app"
+set :rvm_type, :system
+set :rvm_ruby_version, 'ruby-2.1.0@art_electronics'
 
-# precompile assets before App reboot
-before "deploy:create_symlink", "app:assets_build"
+set :unicorn_conf, -> { "#{fetch :deploy_to}/current/config/unicorn.rb" }
+set :unicorn_pid, -> { "#{fetch :deploy_to}/shared/tmp/pids/unicorn.pid" }
+set :unicorn_binary, "unicorn_rails"
+
+role :all, %w{www@95.85.11.168}
+server '95.85.11.168', user: 'www', roles: %w{web app db}
+
+set :rake,           "rake"
+set :rails_env,      "production"
+set :migrate_env,    ""
+set :migrate_target, :latest
+
+# set :default_stage, "staging"
 
 namespace :deploy do
-  task :migrate do
-    app.db_create
-    app.db_migrate
+
+  desc 'Restart application'
+  task :restart do
+    # on roles(:app) do
+      invoke 'deploy:unicorn:restart'
+    # end
   end
 
-  task :restart, roles: :app, except: { no_release: true } do
-    app.symlinks
-    web_server.restart
+  namespace :unicorn do
+    
+    pid_path = "#{fetch :release_path}/tmp/pids"
+    unicorn_pid = "#{pid_path}/unicorn.pid"
+
+    desc 'Start unicorn'
+    task :start do
+      on roles(:app) do
+        within current_path do
+          with rails_env: fetch(:rails_env) do
+            execute :bundle, "exec #{fetch(:unicorn_binary)} -c #{fetch :unicorn_conf} -E #{fetch :rails_env} -D"
+          end
+        end
+      end
+    end
+
+    desc 'Stop unicorn'
+    task :stop do
+      on roles(:app) do
+        execute "if [ -f #{fetch :unicorn_pid} ] && [ -e /proc/$(cat #{fetch :unicorn_pid}) ]; then kill `cat #{fetch :unicorn_pid}`; fi"
+      end
+    end
+
+    desc 'Restart unicorn'
+    task :restart do
+      on roles(:app) do
+        on roles(:app) do
+          execute "if [ -f #{fetch :unicorn_pid} ] && [ -e /proc/$(cat #{fetch :unicorn_pid}) ]; then kill `cat #{fetch :unicorn_pid}`; fi"
+        end
+
+        on roles(:app) do
+          within current_path do
+            with rails_env: fetch(:rails_env) do
+              execute :bundle, "exec #{fetch(:unicorn_binary)} -c #{fetch :unicorn_conf} -E #{fetch :rails_env} -D"
+            end
+          end
+        end
+      end
+    end
+
   end
 
-  task :db_update do
-    deploy.update_code
-    deploy.finalize_update
-    app.symlinks
-    app.bundle
-    app.db_migrate
-  end
+  after :finishing, 'deploy:cleanup'
+
 end

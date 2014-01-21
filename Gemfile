@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby '2.1.0'
 # source 'http://gems.github.com'
 # Delete all gems: gem list | cut -d' ' -f1 | xargs gem uninstall -aIx
 # for i in `gem list --no-versions`; do gem uninstall -aIx $i; done
@@ -103,6 +104,12 @@ end
 group :development do
   gem 'quiet_assets'
   gem 'sqlite3'
+  
+  #deploy
+  gem 'capistrano', '~> 3.1.0'
+  gem 'capistrano-rvm', '~> 0.1.0'
+  gem 'capistrano-bundler'
+  gem 'capistrano-rails', '~> 1.1.0'
 end
 
 group :assets do  
