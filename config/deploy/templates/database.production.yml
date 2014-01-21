@@ -1,0 +1,26 @@
+development:
+  adapter: mysql2
+  database: art-electronics-new_dev
+  host: localhost
+  username: root
+  password: 1qa123
+  encoding: utf8
+  timeout: 5000
+
+production:
+  adapter: mysql2
+  database: art-electronics-new_prod
+  host: localhost
+  username: rails
+  password: 1qa123
+  encoding: utf8
+  timeout: 5000
+
+test:
+  adapter: mysql2
+  database: art-electronics-new_test
+  host: localhost
+  username: 
+  password: 
+  encoding: utf8
+  timeout: 5000

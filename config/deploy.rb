@@ -1,13 +1,14 @@
 #OPTIMIZE improve speed of deploing
 #TODO make elegant exit unicorn restart and stop
+#TODO lock cap version
 
-set :application, 'art_electronics'
+set :application, 'art-electronics'
 set :user, 'www'
 set :scm, :git
 set :repo_url, 'git@github.com:taichiman/open-cook.git'
-set :deploy_to, -> { "/home/#{ fetch :user }/#{ fetch :application }/#{ fetch :stage }" }
+set :deploy_to, -> { "/var/www/#{ fetch :application }/#{ fetch :stage }" }
 
-ask :branch, proc { `git rev-parse --abbrev-ref HEAD`.chomp }
+set :branch, proc { `git rev-parse --abbrev-ref HEAD`.chomp }
 
 set :format, :pretty
 set :log_level, :debug
@@ -17,25 +18,28 @@ set :linked_files, %w{config/database.yml}
 set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
 
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
+set :default_env, { rails_env: 'production' }
+
 set :keep_releases, 5
 set :ssh_options, {:forward_agent => true}
 
 set :rvm_type, :system
-set :rvm_ruby_version, 'ruby-2.1.0@art_electronics'
+set :rvm_ruby_version, 'ruby-2.1.0@art-electronics'
 
 set :unicorn_conf, -> { "#{fetch :deploy_to}/current/config/unicorn.rb" }
 set :unicorn_pid, -> { "#{fetch :deploy_to}/shared/tmp/pids/unicorn.pid" }
 set :unicorn_binary, "unicorn_rails"
 
-role :all, %w{www@95.85.11.168}
-server '95.85.11.168', user: 'www', roles: %w{web app db}
+role :web, %w{www@107.170.254.124}
+role :app, %w{www@107.170.254.124}
+role :db , %w{www@107.170.254.124}
+server '107.170.254.124', user: 'www', roles: %w{web app db}
 
 set :rake,           "rake"
 set :rails_env,      "production"
 set :migrate_env,    ""
 set :migrate_target, :latest
 
-# set :default_stage, "staging"
 
 namespace :deploy do
 
@@ -90,4 +94,11 @@ namespace :deploy do
 
   after :finishing, 'deploy:cleanup'
 
+end
+
+desc "run on server"
+task :run_on do
+  on roles :app do
+    execute "id"
+  end
 end
