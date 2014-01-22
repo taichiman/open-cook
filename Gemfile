@@ -106,9 +106,9 @@ group :development do
   gem 'sqlite3'
   
   #deploy
-  # gem 'capistrano', '~> 3.1.0'
-  gem 'capistrano-rvm' #'~> 0.1.0'
-  gem 'capistrano-rails' #, '~> 1.1.0'
+  # gem 'capistrano', '~> 3.0.1'
+  gem 'capistrano-rails','~> 1.1.0'
+  gem 'capistrano-rvm'
   gem 'capistrano-bundler'
 end
 

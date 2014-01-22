@@ -334,7 +334,7 @@ DEPENDENCIES
   awesome_nested_set!
   bootstrap-sass!
   capistrano-bundler
-  capistrano-rails
+  capistrano-rails (~> 1.1.0)
   capistrano-rvm
   capybara
   coffee-rails
