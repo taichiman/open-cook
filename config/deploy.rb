@@ -40,6 +40,7 @@ set :rails_env,      "production"
 set :migrate_env,    ""
 set :migrate_target, :latest
 
+set :bundle_flags, '--deployment'
 
 namespace :deploy do
 

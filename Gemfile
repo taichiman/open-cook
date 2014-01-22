@@ -83,10 +83,10 @@ gem 'the_audit',
   github: 'open-cook/the_audit',
   branch: 'master'
 
-group :development, :assets do
+# group :development, :assets do
   gem 'sass-rails'
   gem 'bootstrap-sass', github: 'thomas-mcdonald/bootstrap-sass'
-end
+# end
 
 group :development, :test do
   gem 'colored'
