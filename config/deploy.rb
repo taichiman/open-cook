@@ -33,16 +33,16 @@ set :config_files, %w(
 set :executable_config_files, %w(unicorn_init.sh)
 
 #files which need be symlinked
-set(:symlinks, [
-  {
-    source: "nginx.conf",
-    link: "/etc/nginx/sites-enabled/#{fetch(:full_app_name)}"
-  },
-  {
-    source: "unicorn_init.sh",
-    link: "/etc/init.d/unicorn_#{fetch(:full_app_name)}"
-  }
-])
+# set(:symlinks, [
+#   {
+#     source: "nginx.conf",
+#     link: "/etc/nginx/sites-enabled/#{fetch(:full_app_name)}"
+#   },
+#   {
+#     source: "unicorn_init.sh",
+#     link: "/etc/init.d/unicorn_#{fetch(:full_app_name)}"
+#   }
+# ])
 
 #join to main workflow
 namespace :deploy do
@@ -53,6 +53,7 @@ namespace :deploy do
   # compile assets locally then rsync
   # after 'deploy:symlink:shared', 'deploy:compile_assets_locally'
   after :finishing, 'deploy:cleanup'
+  after :publishing, 'deploy:unicorn:restart'
 end
 
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
@@ -73,61 +74,6 @@ set :ssh_options, {:forward_agent => true}
 
 #gem capistrano-bundler
 set :bundle_flags, '--deployment'
-
-namespace :deploy do
-
-  # desc 'Restart application'
-  # task :restart do
-  #   # on roles(:app) do
-  #     invoke 'deploy:unicorn:restart'
-  #   # end
-  # end
-
-  # namespace :unicorn do
-    
-  #   pid_path = "#{fetch :release_path}/tmp/pids"
-  #   unicorn_pid = "#{pid_path}/unicorn.pid"
-
-  #   desc 'Start unicorn'
-  #   task :start do
-  #     on roles(:app) do
-  #       within current_path do
-  #         with rails_env: fetch(:rails_env) do
-  #           execute :bundle, "exec #{fetch(:unicorn_binary)} -c #{fetch :unicorn_conf} -E #{fetch :rails_env} -D"
-  #         end
-  #       end
-  #     end
-  #   end
-
-  #   desc 'Stop unicorn'
-  #   task :stop do
-  #     on roles(:app) do
-  #       execute "if [ -f #{fetch :unicorn_pid} ] && [ -e /proc/$(cat #{fetch :unicorn_pid}) ]; then kill `cat #{fetch :unicorn_pid}`; fi"
-  #     end
-  #   end
-
-  #   desc 'Restart unicorn'
-  #   task :restart do
-  #     on roles(:app) do
-  #       on roles(:app) do
-  #         execute "if [ -f #{fetch :unicorn_pid} ] && [ -e /proc/$(cat #{fetch :unicorn_pid}) ]; then kill `cat #{fetch :unicorn_pid}`; fi"
-  #       end
-
-  #       on roles(:app) do
-  #         within current_path do
-  #           with rails_env: fetch(:rails_env) do
-  #             execute :bundle, "exec #{fetch(:unicorn_binary)} -c #{fetch :unicorn_conf} -E #{fetch :rails_env} -D"
-  #           end
-  #         end
-  #       end
-  #     end
-  #   end
-
-  # end
-
-  # after :finishing, 'deploy:cleanup'
-
-end
 
 desc "run on server"
 task :run_on do

@@ -1,0 +1,34 @@
+namespace :deploy do
+  namespace :unicorn do
+    desc 'Restart unicorn application'
+    task :restart do
+      on roles(:app) do
+        execute "/etc/init.d/unicorn_#{fetch(:full_app_name)} restart"
+      end
+    end
+    
+    desc 'Srart unicorn application'
+    task :start do
+      on roles(:app) do
+        execute "/etc/init.d/unicorn_#{fetch(:full_app_name)} start"
+      end
+    end
+
+    desc 'Srart unicorn application'
+    task :stop do
+      on roles(:app) do
+        execute "/etc/init.d/unicorn_#{fetch(:full_app_name)} stop"
+      end
+    end
+
+    #TODO cache clear
+    #  after :restart, :clear_cache do
+    #on roles(:web), in: :groups, limit: 3, wait: 10 do
+      # Here we can do anything such as:
+      # within release_path do
+      #   execute :rake, 'cache:clear'
+      # end
+    #end
+    #end
+  end
+end

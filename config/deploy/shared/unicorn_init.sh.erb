@@ -6,8 +6,8 @@ TIMEOUT=${TIMEOUT-60}
 APP_ROOT=<%= current_path %>
 PID_DIR=$APP_ROOT/tmp/pids
 PID=$PID_DIR/unicorn.pid
-CMD="cd $APP_ROOT;  bundle exec unicorn -D -c <%= "#{shared_path}/config/unicorn.rb" %> -E <%= fetch(:rails_env) %>"
-AS_USER=deploy
+CMD="cd $APP_ROOT;  /usr/local/rvm/bin/rvm <%= fetch :rvm_ruby_version %> do bundle exec unicorn -D -c <%= "#{shared_path}/config/unicorn.rb" %> -E <%= fetch(:rails_env) %>"
+AS_USER=www
 set -u
 
 OLD_PIN="$PID.oldbin"
