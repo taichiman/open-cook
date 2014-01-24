@@ -1,6 +1,6 @@
 set :stage, :staging
 set :full_app_name, "#{fetch :application}_#{fetch :stage}"
-set :branch, :deploy_feature
+set :branch, :tags_feature
 
 set :full_app_path, "#{ fetch :application }_#{ fetch :stage }"
 

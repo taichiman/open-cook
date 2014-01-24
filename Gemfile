@@ -93,6 +93,7 @@ group :development, :test do
   gem 'thin'
   gem 'faker'
   gem 'seedbank', github: 'james2m/seedbank'
+  gem 'awesome_print'
 
   gem 'rspec'
   gem 'rspec-core'

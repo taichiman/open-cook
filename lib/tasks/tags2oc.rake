@@ -1,4 +1,4 @@
-
+require 'yaml'
 namespace :ae do
   namespace :tags do
     desc "Перетягиваем сами теги из AE в Open-cook"
@@ -31,6 +31,28 @@ namespace :ae do
         end
       end
       puts ''
+    end
+
+    desc "Compare correct article tags in old and new bases"
+    task compare_equality: :environment do
+      old_articles = AE_Article.all
+      new_articles = Post.all
+      
+      puts "Compare articles quantity".blue
+      result = compare_articles_quantity old_articles, new_articles
+      if result == 0 
+        puts "Counts equals".green
+      else
+        puts "Counts are different: old base ( #{result[0]} ), new base( #{result[1]})".red
+      end
+
+      puts "Compare correct article tags in old and new bases".blue
+      # ap ae_article[0]
+      art_old = old_articles[0]
+      art_new = Post.find art_old.id
+
+      compare_article art_old, art_new
+
     end
   end
 end

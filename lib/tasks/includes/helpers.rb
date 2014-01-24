@@ -192,27 +192,76 @@ def create_post node
   post
 end
 
-def create_tag tag
-  tag = ActsAsTaggableOn::Tag.new(
-    id: tag.id,
-    name: tag.name
-  )
-  tag
+def create_tags old_article, new_article
+  tags = get_tags_by_context old_article, :names, :titles, :words
+  new_article.name_list  = "foo, bar, zoo"
+  # new_article.name_list  = tags[:names ].join ','
+  # new_article.title_list = tags[:titles].join ','
+  # new_article.word_list  = tags[:words ].join ','
+  if new_article.save
+    puts '*'
+    puts "in create tags: save: #{Post.find( new_article.id).name_list}"
+  else
+    puts_error old_article
+  end
 end
 
-def create_tagging tagging
-  tagging = ActsAsTaggableOn::Tagging.new(
-    id:            tagging.id,
-    tag_id:        tagging.tag_id,
-    taggable_id:   tagging.taggable_id,
-    taggable_type: tagging.taggable_type,
-    tagger_id:     tagging.tagger_id,
-    tagger_type:   tagging.tagger_type,
-    context:       tagging.context,
-    created_at:    tagging.created_at
-  )
-
-  tagging.taggable_type = 'Post' if tagging.taggable_type == 'Article'
-
-  tagging
+def get_tags_by_context old_article, *contexts
+  tags = {}
+  contexts.each do | context |
+    tags[ context ] = []
+    result = AE_FullDatabase.connection.execute "select name from tags inner join taggings on tags.id = taggings.tag_id where taggable_id = #{old_article.id} and taggable_type='Article' and context='#{ context.to_s }'"
+    result.each(as: :array)  do | row |
+      tags[ context ]+= row
+    end
+  end
+  # puts "!! Hello #{ tags }"
+  tags
 end
+
+# def create_tag tag
+#   tag = ActsAsTaggableOn::Tag.new(
+#     id: tag.id,
+#     name: tag.name
+#   )
+#   tag
+# end
+
+# def create_tagging tagging
+#   tagging = ActsAsTaggableOn::Tagging.new(
+#     id:            tagging.id,
+#     tag_id:        tagging.tag_id,
+#     taggable_id:   tagging.taggable_id,
+#     taggable_type: tagging.taggable_type,
+#     tagger_id:     tagging.tagger_id,
+#     tagger_type:   tagging.tagger_type,
+#     context:       tagging.context,
+#     created_at:    tagging.created_at
+#   )
+
+#   tagging.taggable_type = 'Post' if tagging.taggable_type == 'Article'
+
+#   tagging
+# end
+
+# def compare_article art_old, art_new 
+#     # art_old.user        = art_new.user,
+#     # art_old.hub         = art_new.hub,
+#     # art_old.keywords    = art_new.meta_keywords,
+#     # art_old.description = art_new.meta_description.to_s[0..250],
+#     # art_old.title       = art_new.title,
+#     # art_old.raw_intro   = art_new.description,
+#     # art_old.raw_content = art_new.body,
+#     # art_old.state       = art_new.state,
+#     # ???art_old.legacy_url  = art_new"#{article_category_slug}/#{node.id}"
+#     0
+# end
+
+# def compare_articles_quantity old_articles, new_articles
+#   old_count = old_articles.count; new_count = new_articles.count
+#   if old_count == new_count
+#     0
+#   else
+#     [old_count, new_count]
+#   end
+# end
